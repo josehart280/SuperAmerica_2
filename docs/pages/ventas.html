@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas - SuperAmerica BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <sa-sidebar></sa-sidebar>
+
+        <main class="main-content">
+            <sa-header title="Análisis de Ventas" show-month-selector></sa-header>
+
+            <!-- Stats Cards del Mes Seleccionado -->
+            <section class="stats-grid" id="stats-mensuales">
+                <div class="stat-card" style="border-left: 4px solid var(--chart-1);">
+                    <div class="stat-label">Total Ventas</div>
+                    <div class="stat-value" id="ventas-total">Cargando...</div>
+                    <div class="stat-change" id="ventas-comparison">--</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-2);">
+                    <div class="stat-label">Transacciones</div>
+                    <div class="stat-value" id="ventas-transacciones">--</div>
+                    <div class="stat-change" id="ventas-transacciones-delta">--</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-3);">
+                    <div class="stat-label">Ticket Promedio</div>
+                    <div class="stat-value" id="ventas-ticket">--</div>
+                    <div class="stat-change" id="ventas-ticket-delta">--</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-5);">
+                    <div class="stat-label">Días Operativos</div>
+                    <div class="stat-value" id="ventas-dias">--</div>
+                    <div class="stat-change">días</div>
+                </div>
+            </section>
+
+            <!-- Gráfico Semanal -->
+            <section class="charts-grid">
+                <div class="chart-container full-width">
+                    <h3 class="chart-title">Ventas por Semana</h3>
+                    <canvas id="semanalChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Tabla Semanal -->
+            <section class="card mt-lg">
+                <h3 class="card-title mb-md">Desglose Semanal</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Semana</th><th>Días</th><th>Ventas</th><th>Transacciones</th><th>Ticket Promedio</th><th>% del Mes</th></tr>
+                        </thead>
+                        <tbody id="tabla-semanal"><tr><td colspan="6">Cargando...</td></tr></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Rendimiento por Día de la Semana -->
+            <section class="card mt-lg">
+                <div class="card-header">
+                    <h3 class="card-title">Rendimiento por Día de la Semana</h3>
+                    <span class="text-muted small">Promedio de transacciones por día</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dayOfWeekChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        let chartSemanal = null;
+        let chartDayOfWeek = null;
+        let datosSemanales = null;
+        let datosMensuales = null;
+        let datosHeatmap = null;
+
+        // Cargar todos los datos al inicio
+        async function loadData() {
+            try {
+                const [sem, men, heat] = await Promise.all([
+                    fetch('/api/datos_semanales').then(r => r.json()),
+                    fetch('/api/datos_mensuales').then(r => r.json()),
+                    fetch('/api/heatmap_data').then(r => r.json())
+                ]);
+                datosSemanales = sem;
+                datosMensuales = men;
+                datosHeatmap = heat;
+                actualizarMesSeleccionado();
+            } catch (e) {
+                console.error('Error cargando datos:', e);
+            }
+        }
+
+        function cambiarMes() {
+            const mes = document.getElementById('mes-selector').value;
+            actualizarMesSeleccionado(mes);
+        }
+
+        function actualizarMesSeleccionado(mes) {
+            // Obtener mes del selector si no se pasa
+            if (!mes) mes = document.getElementById('mes-selector').value;
+            
+            const sem = datosSemanales?.[mes];
+            const men = datosMensuales?.[mes];
+            
+            if (!sem || !men) return;
+
+            // Stats cards
+            const ventaTotal = men.total_ventas;
+            document.getElementById('ventas-total').textContent = formatCurrency(ventaTotal);
+            
+            document.getElementById('ventas-transacciones').textContent = 
+                men.count_transacciones.toLocaleString();
+            document.getElementById('ventas-ticket').textContent = 
+                formatCurrency(men.ticket_promedio);
+            document.getElementById('ventas-dias').textContent = 
+                men.dias_operativos;
+
+            const meses = ['Enero', 'Febrero', 'Marzo'];
+            const idx = meses.indexOf(mes);
+            if (idx > 0) {
+                const mesAnt = meses[idx - 1];
+                const dAnt = datosMensuales[mesAnt];
+                
+                if (dAnt) {
+                    // Ventas Delta
+                    const cambioV = ((ventaTotal - dAnt.total_ventas) / dAnt.total_ventas * 100).toFixed(1);
+                    document.getElementById('ventas-comparison').innerHTML = 
+                        `<span class="${cambioV >= 0 ? 'text-success' : 'text-danger'}">${cambioV >= 0 ? '+' : ''}${cambioV}%</span> vs ${mesAnt}`;
+                    
+                    // Transacciones Delta
+                    const cambioT = ((men.count_transacciones - dAnt.count_transacciones) / dAnt.count_transacciones * 100).toFixed(1);
+                    document.getElementById('ventas-transacciones-delta').innerHTML = 
+                        `<span class="${cambioT >= 0 ? 'text-success' : 'text-danger'}">${cambioT >= 0 ? '↑' : '↓'} ${Math.abs(cambioT)}%</span>`;
+
+                    // Ticket Delta
+                    const cambioK = ((men.ticket_promedio - dAnt.ticket_promedio) / dAnt.ticket_promedio * 100).toFixed(1);
+                    document.getElementById('ventas-ticket-delta').innerHTML = 
+                        `<span class="${cambioK >= 0 ? 'text-success' : 'text-danger'}">${cambioK >= 0 ? '↑' : '↓'} ${Math.abs(cambioK)}%</span>`;
+                }
+            } else {
+                document.getElementById('ventas-comparison').textContent = 'Inicio trimestre';
+                document.getElementById('ventas-transacciones-delta').textContent = '--';
+                document.getElementById('ventas-ticket-delta').textContent = '--';
+            }
+
+            // Tabla semanal
+            let html = '';
+            const keys = ['semana_1', 'semana_2', 'semana_3', 'semana_4'];
+            keys.forEach((k, i) => {
+                const s = sem[k];
+                if (s && s.total_ventas > 0) {
+                    const pct = (s.total_ventas / sem.total_mes.total_ventas * 100).toFixed(1);
+                    html += `<tr>
+                        <td>Semana ${i + 1}</td>
+                        <td>${s.rango}</td>
+                        <td>${formatCurrency(s.total_ventas)}</td>
+                        <td>${s.transacciones.toLocaleString()}</td>
+                        <td>${formatCurrency(s.ticket_promedio)}</td>
+                        <td>${pct}%</td>
+                    </tr>`;
+                }
+            });
+            
+            // TotalRow
+            html += `<tr style="font-weight:bold;background:var(--bg-secondary)">
+                <td>Total</td>
+                <td>--</td>
+                <td>${formatCurrency(sem.total_mes.total_ventas)}</td>
+                <td>${sem.total_mes.transacciones.toLocaleString()}</td>
+                <td>${formatCurrency(sem.total_mes.ticket_promedio)}</td>
+                <td>100%</td>
+            </tr>`;
+            
+            document.getElementById('tabla-semanal').innerHTML = html;
+
+            // Gráfico semanal
+            const semanas = keys.map((k, i) => 'Semana ' + (i + 1));
+            const ventas = keys.map(k => sem[k]?.total_ventas || 0);
+            
+            if (chartSemanal) chartSemanal.destroy();
+            
+            const ctx = document.getElementById('semanalChart').getContext('2d');
+            chartSemanal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: semanas,
+                    datasets: [{
+                        label: 'Ventas',
+                        data: ventas,
+                        backgroundColor: ['#4285f4', '#34a853', '#fbbc04', '#ea4335']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                callback: v => '₡' + (v / 1000000).toFixed(1) + 'M'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update Day of Week Chart
+            updateDayOfWeekChart(mes);
+        }
+
+        function updateDayOfWeekChart(mes) {
+            if (!datosHeatmap) return;
+            
+            let data = [];
+            if (mes === 'todos') {
+                // Average across all months in heatmap
+                const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                data = days.map(day => {
+                    let sum = 0;
+                    let count = 0;
+                    Object.values(datosHeatmap).forEach(monthSeries => {
+                        const dayData = monthSeries.find(s => s.name === day);
+                        if (dayData) {
+                            sum += dayData.data.reduce((a, b) => a + b, 0);
+                            count++;
+                        }
+                    });
+                    return count > 0 ? Math.round(sum / count) : 0;
+                });
+            } else if (datosHeatmap[mes]) {
+                data = datosHeatmap[mes].map(s => s.data.reduce((a, b) => a + b, 0));
+            }
+
+            const ctx = document.getElementById('dayOfWeekChart').getContext('2d');
+            if (chartDayOfWeek) chartDayOfWeek.destroy();
+
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#e8e8e8' : '#323130';
+
+            chartDayOfWeek = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+                    datasets: [{
+                        label: 'Transacciones Totales',
+                        data: data,
+                        backgroundColor: data.map((v, i) => i >= 4 ? '#ea4335' : '#4285f4'), // Red for weekends (Fri-Sun)
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: textColor } },
+                        y: { ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+        }
+
+        function formatCurrency(val) {
+            return '₡' + Math.round(val).toLocaleString();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo Claro';
+            }
+            loadData();
+        });
+    </script>
+    <style>
+        .mes-selector {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .full-width { grid-column: 1 / -1; }
+        .mt-lg { margin-top: 24px; }
+        .mb-md { margin-bottom: 16px; }
+    </style>
+</body>
+</html>

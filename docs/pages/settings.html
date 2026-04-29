@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - SuperAmerica BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <sa-sidebar></sa-sidebar>
+
+        <main class="main-content">
+            <sa-header title="Configuración"></sa-header>
+
+            <div class="card mb-lg">
+                <h3 class="card-title mb-md">Apariencia</h3>
+                <div class="flex-between" style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+                    <div>
+                        <strong>Modo Oscuro</strong>
+                        <p style="color: var(--text-secondary); font-size: 14px;">Cambiar entre tema claro y oscuro</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="toggleTheme()" id="theme-btn">
+                        Activar
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-lg">
+                <h3 class="card-title mb-md">Datos</h3>
+                <div class="flex-between" style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+                    <div>
+                        <strong>Última actualización</strong>
+                        <p style="color: var(--text-secondary); font-size: 14px;" id="last-update">Cargando...</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        Recargar
+                    </button>
+                </div>
+                <div class="flex-between" style="padding: 16px 0;">
+                    <div>
+                        <strong>Fuente de datos</strong>
+                        <p style="color: var(--text-secondary); font-size: 14px;">Archivos JSON en /data</p>
+                    </div>
+                    <span class="badge" style="background: #34a853; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">Activo</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title mb-md">Acerca de</h3>
+                <div style="padding: 16px 0;">
+                    <p><strong>SuperAmerica Dashboard BI</strong></p>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Versión 2.0 - Redesign Q1 2026</p>
+                    <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;">
+                        Desarrollado con Express.js, Chart.js y vanilla JavaScript
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+            document.getElementById('theme-btn').textContent = isDark ? 'Desactivar' : 'Activar';
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('theme') === 'dark';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo Claro';
+                document.getElementById('theme-btn').textContent = 'Desactivar';
+            }
+            
+            // Last update
+            const now = new Date();
+            document.getElementById('last-update').textContent = now.toLocaleDateString('es-CR') + ' ' + now.toLocaleTimeString('es-CR');
+        });
+    </script>
+</body>
+</html>

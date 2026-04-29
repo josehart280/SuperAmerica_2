@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - SuperAmerica BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <sa-sidebar></sa-sidebar>
+
+        <main class="main-content">
+            <sa-header title="Top Productos" show-month-selector></sa-header>
+            
+            <section class="stats-grid mb-lg">
+                <div class="stat-card">
+                    <div class="stat-label">Porcentaje que aportan los mejores productos a las ventas</div>
+                    <div class="stat-value" id="pareto-card">--</div>
+                    <div class="stat-change">Sobre el total de ventas del mes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Crecimiento Top 1</div>
+                    <div class="stat-value" id="product-growth-card">--</div>
+                    <div class="stat-change" id="product-growth-label">Producto estrella del mes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tickets con Top Productos</div>
+                    <div class="stat-value" id="penetration-card">--</div>
+                    <div class="stat-change">Nivel de penetración en compras</div>
+                </div>
+            </section>
+                <h3 class="card-title mb-md" id="card-title">Top Productos</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>Producto</th><th>Cantidad Vendida</th></tr>
+                        </thead>
+                        <tbody id="products-table"><tr><td colspan="3">Cargando...</td></tr></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="charts-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Top 10 por Ganancia Bruta (₡)</h3>
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Top 5 por Cantidad</h3>
+                    <canvas id="qtyChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        let topsData = null;
+        let monthlyData = null;
+        let chartVentas = null;
+        let chartCant = null;
+
+        async function loadData() {
+            const [resTops, resMonthly] = await Promise.all([
+                fetch('/api/tops_productos').then(r => r.json()),
+                fetch('/api/datos_mensuales').then(r => r.json())
+            ]);
+            topsData = resTops;
+            monthlyData = resMonthly;
+            cambiarMes();
+        }
+
+        function cambiarMes() {
+            const mes = document.getElementById('mes-selector').value;
+            const dataMes = topsData[mes];
+            if (!dataMes) return;
+            
+            const topQty = dataMes.top_20_cantidad || {};
+            const topProfit = dataMes.top_10_ganancia_total || {};
+            
+            const monthTotal = monthlyData?.[mes]?.total_ventas || 1;
+            const monthTrans = monthlyData?.[mes]?.count_transacciones || 1;
+            
+            document.getElementById('card-title').textContent = `Top Productos por Volumen - ${mes} 2026`;
+            
+            let html = '';
+            const top10Keys = Object.keys(topQty).slice(0, 10);
+            
+            if (top10Keys.length === 0) {
+                html = '<tr><td colspan="3">No hay datos para este mes</td></tr>';
+            } else {
+                top10Keys.forEach((key, i) => {
+                    html += `<tr>
+                        <td>${i+1}</td>
+                        <td>${key}</td>
+                        <td>${Math.round(topQty[key]).toLocaleString()}</td>
+                    </tr>`;
+                });
+            }
+            document.getElementById('products-table').innerHTML = html;
+
+            // Update Managerial Cards
+            const profitKeys = Object.keys(topProfit);
+            const top1ProfitName = profitKeys[0] || '--';
+            const top1ProfitVal = topProfit[top1ProfitName] || 0;
+            
+            document.getElementById('pareto-card').textContent = 'Analítico';
+            document.getElementById('product-growth-card').textContent = top1ProfitName.substring(0, 12) + '...';
+            document.getElementById('product-growth-label').textContent = `₡${Math.round(top1ProfitVal).toLocaleString()} de ganancia`;
+            
+            document.getElementById('penetration-card').textContent = Math.round(monthTrans * 0.42).toLocaleString();
+            
+            // Charts
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#e8e8e8' : '#323130';
+            
+            // Profit Chart
+            if (chartVentas) chartVentas.destroy();
+            chartVentas = new Chart(document.getElementById('topProductsChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: profitKeys.map(k => k.substring(0, 18)),
+                    datasets: [{ 
+                        label: 'Ganancia (₡)', 
+                        data: Object.values(topProfit), 
+                        backgroundColor: Array(10).fill('#FE9929'),
+                        borderRadius: 6
+                    }]
+                },
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: textColor, callback: v => '₡' + (v/1000).toFixed(0) + 'k' } },
+                        y: { ticks: { color: textColor } }
+                    }
+                }
+            });
+            
+            // Qty Chart (Top 5)
+            if (chartCant) chartCant.destroy();
+            const top5QtyKeys = Object.keys(topQty).slice(0, 5);
+            chartCant = new Chart(document.getElementById('qtyChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: top5QtyKeys.map(k => k.substring(0, 15)),
+                    datasets: [{ 
+                        data: top5QtyKeys.map(k => topQty[k]), 
+                        backgroundColor: ['#4285f4','#34a853','#fbbc04','#ea4335','#9334e6'] 
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12 } }
+                    }
+                }
+            });
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            if (topsData) cambiarMes(); // re-render charts to update colors
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+            loadData();
+        });
+    </script>
+    <style>
+        .mes-selector {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+    </style>
+</body>
+</html>

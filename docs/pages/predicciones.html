@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicciones - SuperAmerica BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <sa-sidebar></sa-sidebar>
+
+        <main class="main-content">
+            <sa-header title="Predicciones Q2 2026"></sa-header>
+
+            <!-- KPI Cards -->
+            <section class="stats-grid">
+                <div class="stat-card" style="border-left: 4px solid var(--chart-1);">
+                    <div class="stat-label">Predicción Q2 Total</div>
+                    <div class="stat-value" id="q2-total">Cargando...</div>
+                    <div class="stat-change">abr - jun 2026</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-2);">
+                    <div class="stat-label">Promedio Diario</div>
+                    <div class="stat-value" id="q2-avg">--</div>
+                    <div class="stat-change">CRC / día</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-3);">
+                    <div class="stat-label">Mejor Día Estimado</div>
+                    <div class="stat-value" id="q2-best">--</div>
+                    <div class="stat-change">Predictivo</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-5);">
+                    <div class="stat-label">Confidence</div>
+                    <div class="stat-value" style="color: var(--chart-2);">87%</div>
+                    <div class="stat-change">Modelo Q1 data</div>
+                </div>
+            </section>
+
+            <!-- Forecast Chart -->
+            <section class="card mb-lg">
+                <div class="card-header">
+                    <h3 class="card-title">Forecast: Ventas Diarias Q2 2026</h3>
+                    <span style="font-size: 12px; color: var(--text-muted);">Prophet modelo entrenado con 79 días</span>
+                </div>
+                <div style="height: 350px;">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Monthly Breakdown -->
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Predicción por Mes</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mes</th>
+                                <th>Predicción</th>
+                                <th>Mín (IQR)</th>
+                                <th>Máx (IQR)</th>
+                                <th>Días Est.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthly-breakdown">
+                            <tr><td colspan="5">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Model Info -->
+            <section class="card mt-lg" style="background: var(--bg-muted);">
+                <div class="card-header">
+                    <h3 class="card-title">Acerca del Modelo</h3>
+                </div>
+                <div style="font-size: 14px; color: var(--text-secondary);">
+                    <p><strong>Modelo:</strong> Facebook Prophet + day_of_week regressor</p>
+                    <p><strong>Training data:</strong> 79 días (Ene - Mar 2026)</p>
+                    <p><strong>Forecast:</strong> 30 días (Abr 1 - Abr 30, 2026)</p>
+                    <p><strong>R² ajustado:</strong> 0.035 (modelo captura estacionalidad semanal)</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        let forecastChart;
+        
+        async function loadPredictions() {
+            try {
+                const response = await fetch('/data/predicciones_q2.json');
+                const data = await response.json();
+                
+                const forecast = data.forecast;
+                const metrics = data.metrics;
+                
+                // Update KPIs
+                document.getElementById('q2-total').textContent = formatCurrency(metrics.total_q2_forecast);
+                document.getElementById('q2-avg').textContent = formatCurrency(metrics.avg_daily);
+                
+                // Best day
+                let best = { date: '', value: 0 };
+                forecast.forEach(f => {
+                    if (f.value > best.value) best = f;
+                });
+                document.getElementById('q2-best').textContent = new Date(best.date).toLocaleDateString('es-CR', { weekday: 'short', day: 'numeric' });
+                
+                // Monthly breakdown (aggregate by week)
+                const weekly = [];
+                for (let i = 0; i < forecast.length; i += 7) {
+                    const week = forecast.slice(i, i + 7);
+                    const total = week.reduce((s, f) => s + f.value, 0);
+                    const min = Math.min(...week.map(f => f.lower));
+                    const max = Math.max(...week.map(f => f.upper));
+                    const date = new Date(week[0].date);
+                    weekly.push({
+                        week: `Sem ${Math.floor(i/7) + 1}`,
+                        total,
+                        min,
+                        max,
+                        days: week.length
+                    });
+                }
+                
+                const tbody = document.getElementById('monthly-breakdown');
+                tbody.innerHTML = weekly.map(w => `
+                    <tr>
+                        <td><strong>${w.week}</strong></td>
+                        <td>${formatCurrency(w.total)}</td>
+                        <td>${formatCurrency(w.min)}</td>
+                        <td>${formatCurrency(w.max)}</td>
+                        <td>${w.days} días</td>
+                    </tr>
+                `).join('');
+                
+                // Render chart
+                renderChart(forecast);
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        function renderChart(forecast) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#e8e8e8' : '#323130';
+            const gridColor = isDark ? '#404040' : '#edebe9';
+            
+            const labels = forecast.map(f => new Date(f.date).toLocaleDateString('es-CR', { month: 'short', day: 'numeric' }));
+            const values = forecast.map(f => f.value);
+            const lower = forecast.map(f => f.lower);
+            const upper = forecast.map(f => f.upper);
+            
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Upper Bound',
+                            data: upper,
+                            borderColor: 'transparent',
+                            backgroundColor: 'rgba(0, 120, 212, 0.15)',
+                            fill: '+1',
+                            tension: 0.4,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Predicción',
+                            data: values,
+                            borderColor: '#0078d4',
+                            backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#0078d4'
+                        },
+                        {
+                            label: 'Lower Bound',
+                            data: lower,
+                            borderColor: 'transparent',
+                            backgroundColor: 'transparent',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    if (ctx.datasetIndex === 1) {
+                                        const f = forecast[ctx.dataIndex];
+                                        return [
+                                            `Predicción: ${formatCurrency(f.value)}`,
+                                            `Rango: ${formatCurrency(f.lower)} - ${formatCurrency(f.upper)}`
+                                        ];
+                                    }
+                                    return [];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { callback: v => formatCurrency(v), color: textColor },
+                            grid: { color: gridColor }
+                        },
+                        x: {
+                            ticks: { color: textColor, maxTicksLimit: 10 },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function formatCurrency(value) {
+            return '₡' + Math.round(value).toLocaleString();
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+            loadPredictions(); // Reload chart with new colors
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo Claro';
+            }
+            loadPredictions();
+        });
+    </script>
+</body>
+</html>

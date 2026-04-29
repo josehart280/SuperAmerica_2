@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hallazgos & Acciones - SuperAmerica BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <sa-sidebar></sa-sidebar>
+
+        <main class="main-content">
+            <sa-header title="Hallazgos & Plan de Acción" show-month-selector></sa-header>
+
+            <!-- KPIs CRÍTICOS -->
+            <section class="stats-grid">
+                <div class="stat-card" style="border-left: 4px solid var(--chart-1);">
+                    <div class="stat-label">Ventas Totales</div>
+                    <div class="stat-value" id="halla-ventas">Cargando...</div>
+                    <div class="stat-change">Ingresos brutos del mes</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-2);">
+                    <div class="stat-label">IVA Estimado Recaudado</div>
+                    <div class="stat-value" id="halla-iva">--</div>
+                    <div class="stat-change">13% incluido en ventas</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid #FE9929;">
+                    <div class="stat-label">Utilidad Bruta Estimada</div>
+                    <div class="stat-value" id="halla-utilidad">--</div>
+                    <div class="stat-change" id="halla-utilidad-pct">Margen estimado al 22%</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--chart-3);">
+                    <div class="stat-label">Crecimiento de Ticket</div>
+                    <div class="stat-value" id="halla-crecimiento">--</div>
+                    <div class="stat-change" id="halla-crecimiento-label">vs mes anterior</div>
+                </div>
+            </section>
+
+            <!-- Resumen Ejecutivo -->
+            <section class="card mt-lg" style="border-left: 5px solid var(--color-primary);">
+                <h3 style="color: var(--color-primary); margin-top: 0;">📋 Resumen Ejecutivo</h3>
+                <div id="resumen-ejecutivo" class="hallazgos-content">
+                    <p>Cargando datos del mes...</p>
+                </div>
+            </section>
+
+            <!-- Plan de Acción con Evidencias -->
+            <section class="card mt-lg">
+                <h3 class="card-title">🚀 Acciones Recomendadas con Evidencia</h3>
+                <p style="color: var(--text-secondary); margin-top: 0; font-size: 0.9rem;">
+                    Cada acción está respaldada por datos reales de tus transacciones del mes seleccionado.
+                </p>
+                <div id="plan-accion" class="hallazgos-content">
+                    <p>Cargando plan de acción...</p>
+                </div>
+            </section>
+
+            <!-- Autoconsumo -->
+            <section class="card mt-lg" id="card-autoconsumo" style="display:none; border-left: 4px solid var(--chart-4);">
+                <h3 class="card-title">🏠 Autoconsumo de Socios</h3>
+                <div id="halla-autoconsumo"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        let datosInsights = null;
+
+        async function init() {
+            try {
+                datosInsights = await fetch('/api/insights_results').then(r => r.json());
+                cargarHallazgos();
+            } catch (e) {
+                console.error('Error cargando insights:', e);
+                document.getElementById('halla-ventas').textContent = 'Error de carga';
+            }
+        }
+
+        function cambiarMes() {
+            cargarHallazgos();
+        }
+
+        function cargarHallazgos() {
+            const mes = document.getElementById('mes-selector').value;
+            const data = datosInsights?.[mes];
+
+            if (!data) {
+                document.getElementById('halla-ventas').textContent = 'Sin datos';
+                document.getElementById('resumen-ejecutivo').innerHTML = '<p>Sin datos disponibles para este mes.</p>';
+                document.getElementById('plan-accion').innerHTML = '<p>Sin datos disponibles para este mes.</p>';
+                return;
+            }
+
+            const rg = data.resumen_general;
+
+            // --- KPI CARDS ---
+            document.getElementById('halla-ventas').textContent = formatCurrency(rg.venta_total);
+            document.getElementById('halla-iva').textContent = formatCurrency(rg.iva_estimado);
+            document.getElementById('halla-utilidad').textContent = formatCurrency(rg.utilidad_bruta_est);
+            document.getElementById('halla-utilidad-pct').textContent = `${rg.margen_bruto_pct}% de margen estimado`;
+
+            const crec = rg.crecimiento_ticket_pct;
+            const crecEl = document.getElementById('halla-crecimiento');
+            if (crec === 0) {
+                crecEl.textContent = '— Primer mes';
+                crecEl.style.color = 'var(--text-secondary)';
+            } else {
+                const arrow = crec >= 0 ? '↑' : '↓';
+                crecEl.textContent = `${arrow} ${Math.abs(crec).toFixed(1)}%`;
+                crecEl.style.color = crec >= 0 ? 'var(--color-success)' : 'var(--color-danger)';
+                document.getElementById('halla-crecimiento-label').textContent =
+                    crec >= 0
+                        ? `Ticket promedio sube ₡${formatNumber(rg.ticket_promedio)} este mes`
+                        : `Ticket promedio bajó a ₡${formatNumber(rg.ticket_promedio)}`;
+            }
+
+            // --- RESUMEN EJECUTIVO ---
+            document.getElementById('resumen-ejecutivo').innerHTML = `
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:1rem; margin-bottom:1rem;">
+                    <div style="background:var(--bg-secondary); padding:12px; border-radius:8px;">
+                        <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Transacciones</div>
+                        <div style="font-size:1.4rem;font-weight:700;">${rg.transacciones.toLocaleString()}</div>
+                    </div>
+                    <div style="background:var(--bg-secondary); padding:12px; border-radius:8px;">
+                        <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Ticket Promedio</div>
+                        <div style="font-size:1.4rem;font-weight:700;">${formatCurrency(rg.ticket_promedio)}</div>
+                    </div>
+                    <div style="background:var(--bg-secondary); padding:12px; border-radius:8px;">
+                        <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Utilidad Bruta</div>
+                        <div style="font-size:1.4rem;font-weight:700;color:#FE9929;">${formatCurrency(rg.utilidad_bruta_est)}</div>
+                    </div>
+                </div>
+                <p style="color:var(--text-secondary); font-size:0.9rem; margin:0;">
+                    En <strong>${mes} 2026</strong>, se generaron <strong>${rg.transacciones.toLocaleString()} ventas</strong>
+                    por un total de <strong>${formatCurrency(rg.venta_total)}</strong>,
+                    con un ticket promedio de <strong>${formatCurrency(rg.ticket_promedio)}</strong>.
+                    La utilidad bruta estimada al ${rg.margen_bruto_pct}% es de <strong style="color:#FE9929;">${formatCurrency(rg.utilidad_bruta_est)}</strong>.
+                </p>
+            `;
+
+            // --- PLAN DE ACCIÓN CON EVIDENCIAS ---
+            const planes = data.planes_accion || [];
+            if (planes.length === 0) {
+                document.getElementById('plan-accion').innerHTML = '<p>No hay recomendaciones generadas para este mes.</p>';
+            } else {
+                const prioColors = {
+                    'Alta':   { bg: '#fff1f0', border: '#dc3545', badge: '#dc3545', text: '#7f1d1d' },
+                    'Media':  { bg: '#fffbeb', border: '#f59e0b', badge: '#d97706', text: '#78350f' },
+                    'Baja':   { bg: '#f0fdf4', border: '#22c55e', badge: '#16a34a', text: '#14532d' },
+                };
+                let html = '<div style="display:grid; gap:1.25rem;">';
+                planes.forEach((plan, idx) => {
+                    const c = prioColors[plan.prioridad] || prioColors['Media'];
+                    html += `
+                        <div style="background:${c.bg}; border-left:4px solid ${c.border}; border-radius:8px; padding:1rem;">
+                            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
+                                <span style="background:${c.badge}; color:white; font-size:0.7rem; padding:2px 8px; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">${plan.prioridad}</span>
+                                <strong style="font-size:1rem; color:${c.text};">${plan.hallazgo}</strong>
+                            </div>
+                            <div style="background:rgba(0,0,0,0.06); border-radius:6px; padding:8px 12px; margin-bottom:0.6rem; font-size:0.88rem; color:var(--text-secondary); border-left:3px solid ${c.border};">
+                                <strong>📊 Evidencia:</strong> ${plan.evidencia}
+                            </div>
+                            <div style="font-size:0.95rem; color:${c.text};">
+                                🚀 <strong>Acción concreta:</strong> ${plan.accion}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                document.getElementById('plan-accion').innerHTML = html;
+            }
+
+            // --- AUTOCONSUMO ---
+            if (data.autoconsumo && data.autoconsumo.transacciones > 0) {
+                document.getElementById('card-autoconsumo').style.display = 'block';
+                document.getElementById('halla-autoconsumo').innerHTML = `
+                    <p>${data.autoconsumo.descripcion}</p>
+                    <p style="font-size:0.9rem;color:var(--text-secondary);">${data.autoconsumo.plan_accion}</p>
+                `;
+            } else {
+                document.getElementById('card-autoconsumo').style.display = 'none';
+            }
+        }
+
+        function formatCurrency(val) {
+            if (val == null || isNaN(val)) return '--';
+            return '₡' + Math.round(val).toLocaleString();
+        }
+
+        function formatNumber(val) {
+            if (val == null || isNaN(val)) return '--';
+            return Math.round(val).toLocaleString();
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = document.body.classList.contains('dark-mode') ? 'Modo Claro' : 'Modo Oscuro';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo Claro';
+            }
+            init();
+        });
+    </script>
+
+    <style>
+        .mes-selector {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .mt-lg { margin-top: 24px; }
+        .hallazgos-content { line-height: 1.6; }
+    </style>
+</body>
+</html>

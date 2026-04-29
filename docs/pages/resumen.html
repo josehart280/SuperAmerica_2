@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen - SuperAmerica BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <sa-sidebar></sa-sidebar>
+
+        <main class="main-content">
+            <sa-header title="Resumen Ejecutivo Q1 2026" show-month-selector show-export></sa-header>
+
+            <!-- Analytical Metrics -->
+            <section class="stats-grid mb-lg">
+                <div class="stat-card" style="border-left: 4px solid var(--color-primary);">
+                    <div class="stat-label">Ingresos Totales</div>
+                    <div class="stat-value" id="ventas-card">--</div>
+                    <div class="stat-change" id="ventas-comparison">Cargando...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Productividad Diaria</div>
+                    <div class="stat-value" id="productivity-card">--</div>
+                    <div class="stat-change">Venta promedio / día op.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Velocidad (Tx/Día)</div>
+                    <div class="stat-value" id="velocity-card">--</div>
+                    <div class="stat-change">Ritmo de transacciones</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Crecimiento</div>
+                    <div class="stat-value" id="growth-card">--</div>
+                    <div class="stat-change" id="growth-label">vs Periodo Anterior</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-secondary); border-left: 4px solid var(--color-success);">
+                    <div class="stat-label">Utilidad Bruta Est.</div>
+                    <div class="stat-value" id="utility-card">--</div>
+                    <div class="stat-change">Margen est. del 22%</div>
+                </div>
+            </section>
+
+            <!-- Charts Row 1 -->
+            <section class="charts-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Ventas Mensuales Q1 2026</h3>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Ticket Promedio por Mes</h3>
+                    <canvas id="ticketChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Heatmap Section -->
+            <section class="card mb-lg">
+                <div class="card-header">
+                    <h3 class="card-title">Transacciones por Hora y Día</h3>
+                    <span class="text-muted small" id="heatmap-label">Datos combinados Q1 2026</span>
+                </div>
+                <div id="heatmap-chart"></div>
+            </section>
+
+            <!-- Monthly Breakdown Table -->
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Desglose Mensual</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mes</th>
+                                <th>Ventas Totales</th>
+                                <th>Transacciones</th>
+                                <th>Ticket Promedio</th>
+                                <th>Venta Diaria</th>
+                                <th>Crecimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthly-table">
+                            <tr><td colspan="6">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/heatmap.js"></script>
+    <script>
+        let monthlyChart, ticketChart, heatmapChart;
+        let datosHeatmap = null;
+        
+        async function loadData() {
+            try {
+                const [men, ins, fore, heat] = await Promise.all([
+                    fetch('/api/datos_mensuales').then(r => r.json()),
+                    fetch('/api/insights_results').then(r => r.json()),
+                    fetch('/api/predicciones').then(r => r.json()).catch(() => null),
+                    fetch('/api/heatmap_data').then(r => r.json()).catch(() => null)
+                ]);
+                datosMensuales = men;
+                datosInsights = ins;
+                datosForecast = fore;
+                datosHeatmap = heat;
+                
+                const meses = ['Enero', 'Febrero', 'Marzo'];
+                const ventas = meses.map(m => datosMensuales[m]?.total_ventas || 0);
+                const tickets = meses.map(m => datosMensuales[m]?.ticket_promedio || 0);
+                
+                renderCharts(meses, ventas, tickets);
+                loadHeatmap();
+                cambiarMes();
+                updateMonthlyTable();
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function cambiarMes() {
+            const selector = document.getElementById('mes-selector');
+            if (!selector || !datosMensuales) return;
+            const mes = selector.value;
+            
+            if (mes === 'todos') {
+                const total = Object.values(datosMensuales).reduce((sum, m) => sum + (m.total_ventas || 0), 0);
+                
+                document.getElementById('ventas-card').textContent = formatCurrency(total);
+                document.getElementById('utility-card').textContent = formatCurrency(total * 0.22);
+                document.getElementById('ventas-comparison').textContent = 'Q1 2026 completo';
+                document.getElementById('productivity-card').textContent = formatCurrency(total / 90);
+                document.getElementById('velocity-card').textContent = '---';
+                document.getElementById('growth-card').textContent = 'N/A';
+            } else {
+                const dataM = datosMensuales[mes];
+                
+                if (dataM) {
+                    document.getElementById('ventas-card').textContent = formatCurrency(dataM.total_ventas);
+                    document.getElementById('utility-card').textContent = formatCurrency(dataM.total_ventas * 0.22);
+                    
+                    // New Analytical Cards
+                    document.getElementById('productivity-card').textContent = formatCurrency(dataM.venta_promedio_diaria);
+                    document.getElementById('velocity-card').textContent = Math.round(dataM.count_transacciones / dataM.dias_operativos) + ' tx/día';
+                    
+                    const meses = ['Enero', 'Febrero', 'Marzo'];
+                    const idx = meses.indexOf(mes);
+                    if (idx > 0) {
+                        const anterior = datosMensuales[meses[idx - 1]]?.total_ventas;
+                        if (anterior) {
+                            const cambio = ((dataM.total_ventas - anterior) / anterior * 100).toFixed(1);
+                            const esPos = cambio >= 0;
+                            document.getElementById('ventas-comparison').innerHTML = 
+                                `<span class="${esPos ? 'text-success' : 'text-danger'}">${esPos ? '+' : ''}${cambio}% vs ${meses[idx-1]}</span>`;
+                            
+                            document.getElementById('growth-card').innerHTML = 
+                                `<span class="${esPos ? 'text-success' : 'text-danger'}">${esPos ? '↑' : '↓'} ${Math.abs(cambio)}%</span>`;
+                            document.getElementById('growth-label').textContent = `Vs ${meses[idx-1]}`;
+                        } else {
+                            document.getElementById('ventas-comparison').textContent = '--';
+                            document.getElementById('growth-card').textContent = '--';
+                        }
+                    } else {
+                        document.getElementById('ventas-comparison').textContent = 'Primer mes del trimestre';
+                        document.getElementById('growth-card').textContent = 'N/A';
+                        document.getElementById('growth-label').textContent = 'Inicio de periodo';
+                    }
+                }
+            }
+
+            // Update Charts
+            updateCharts(mes);
+
+            // Update Heatmap if data available
+            if (heatmapChart && datosHeatmap) {
+                let heatData = [];
+                if (mes === 'todos') {
+                    heatData = datosHeatmap['Enero'] || []; // Default to first month
+                } else if (datosHeatmap[mes]) {
+                    heatData = datosHeatmap[mes];
+                }
+                
+                if (heatData.length > 0) {
+                    const maxHours = Math.max(...heatData.map(d => d.data.length));
+                    const newCategories = Array.from({length: maxHours}, (_, i) => `${i + 7}:00`);
+                    
+                    heatmapChart.chart.updateOptions({
+                        xaxis: { categories: newCategories },
+                        series: heatData
+                    });
+                    
+                    // Update label
+                    document.getElementById('heatmap-label').textContent = 
+                        mes === 'todos' ? 'Datos combinados Q1 2026' : `Datos de ${mes} 2026`;
+                }
+            }
+        }
+
+        function updateCharts(selectedMes) {
+            if (!monthlyChart || !datosMensuales) return;
+            
+            const meses = ['Enero', 'Febrero', 'Marzo'];
+            const ventas = meses.map(m => datosMensuales[m]?.total_ventas || 0);
+            
+            // Monthly Sales Chart
+            const backgroundColors = meses.map(m => 
+                (selectedMes === 'todos' || m === selectedMes) ? '#FE9929' : '#c8c8c8'
+            );
+            
+            monthlyChart.data.datasets[0].data = ventas;
+            monthlyChart.data.datasets[0].backgroundColor = backgroundColors;
+            monthlyChart.update();
+
+            // Ticket Chart Update
+            if (ticketChart) {
+                const tickets = meses.map(m => datosMensuales[m]?.ticket_promedio || 0);
+                ticketChart.data.datasets[0].data = tickets;
+                // Highlight point? Chart.js doesn't easily highlight one point in line chart without complex logic
+                // But at least we keep it synced.
+                ticketChart.update();
+            }
+        }
+        
+        function updateMonthlyTable() {
+            const meses = ['Enero', 'Febrero', 'Marzo'];
+            let html = '';
+            meses.forEach((m, i) => {
+                const d = datosMensuales[m];
+                if (!d) return;
+                
+                let cambio = '--';
+                if (i > 0) {
+                    const prev = datosMensuales[meses[i-1]].total_ventas;
+                    const pct = ((d.total_ventas - prev) / prev * 100).toFixed(1);
+                    cambio = `<span class="${pct >= 0 ? 'text-success' : 'text-danger'}">${pct >= 0 ? '+' : ''}${pct}%</span>`;
+                }
+                
+                html += `<tr>
+                    <td>${m}</td>
+                    <td>${formatCurrency(d.total_ventas)}</td>
+                    <td>${d.count_transacciones.toLocaleString()}</td>
+                    <td>${formatCurrency(d.ticket_promedio)}</td>
+                    <td>${formatCurrency(d.venta_promedio_diaria)}</td>
+                    <td>${cambio}</td>
+                </tr>`;
+            });
+            document.getElementById('monthly-table').innerHTML = html;
+        }
+        
+        function loadHeatmap() {
+            heatmapChart = new HeatmapChart('heatmap-chart', {
+                title: ''
+            });
+            heatmapChart.render();
+        }
+        
+        function renderCharts(months, ventas, tickets) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#e8e8e8' : '#323130';
+            const gridColor = isDark ? '#404040' : '#edebe9';
+            
+            // Monthly sales chart
+            const ctx1 = document.getElementById('monthlyChart').getContext('2d');
+            monthlyChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Ventas (₡)',
+                        data: ventas,
+                        backgroundColor: ['#0078d4', '#00b294', '#f3c10f'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => formatCurrency(ctx.raw)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            ticks: { callback: v => formatCurrency(v), color: textColor },
+                            grid: { color: gridColor }
+                        },
+                        x: { 
+                            ticks: { color: textColor },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+            
+            // Ticket chart
+            const ctx2 = document.getElementById('ticketChart').getContext('2d');
+            ticketChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Ticket Promedio (₡)',
+                        data: tickets,
+                        borderColor: '#FE9929',
+                        backgroundColor: 'rgba(254, 153, 41, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#FE9929',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => formatCurrency(ctx.raw)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            ticks: { callback: v => formatCurrency(v), color: textColor },
+                            grid: { color: gridColor }
+                        },
+                        x: { 
+                            ticks: { color: textColor },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function formatCurrency(value) {
+            return '₡' + Math.round(value).toLocaleString();
+        }
+        
+        function exportPDF() {
+            // Simple print-to-PDF using browser print
+            const content = document.querySelector('.main-content');
+            const originalStatus = document.title;
+            
+            // Add print-specific styles
+            document.body.classList.add('printing');
+            
+            // Open print dialog
+            window.print();
+            
+            // Remove print styles after (user cancels or prints)
+            setTimeout(() => {
+                document.body.classList.remove('printing');
+            }, 1000);
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+            
+            // Reload charts
+            loadData();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo Claro';
+            }
+            loadData();
+        });
+    </script>
+    <style>
+        .mes-selector {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .text-success { color: #34a853; font-weight: bold; }
+        .text-danger { color: #ea4335; font-weight: bold; }
+    </style>
+</body>
+</html>

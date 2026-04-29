@@ -1,0 +1,110 @@
+/* SuperAmerica Dashboard - Design Tokens */
+/* CSS Custom Properties for theming - PBIX Inspired */
+
+:root {
+    /* Primary Colors - PBIX Inspired */
+    --color-primary: #0078d4;
+    --color-primary-dark: #005a9e;
+    --color-primary-light: #4fa3f7;
+    --color-secondary: #f3c10f;
+    --color-accent: #00b294;
+    
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f2f1;
+    --bg-card: #ffffff;
+    --bg-sidebar: #faf9f8;
+    --bg-hover: #edebe9;
+    
+    /* Text Colors */
+    --text-primary: #323130;
+    --text-secondary: #605e5c;
+    --text-muted: #a19f9d;
+    
+    /* Status Colors */
+    --color-success: #107c10;
+    --color-warning: #ffb900;
+    --color-danger: #d13438;
+    --color-info: #0078d4;
+    
+    /* Chart Colors - PBIX Palette */
+    --chart-1: #0078d4;
+    --chart-2: #00b294;
+    --chart-3: #f3c10f;
+    --chart-4: #d13438;
+    --chart-5: #881798;
+    --chart-6: #00b7c3;
+    --chart-7: #567c73;
+    --chart-8: #b4009e;
+    
+    /* Heatmap Colors */
+    --heatmap-low: #e6f2ea;
+    --heatmap-mid: #7cc0e8;
+    --heatmap-high: #0078d4;
+    
+    /* Borders */
+    --border-color: #edebe9;
+    --border-radius: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1.6px 3.6px 0 rgba(0,0,0,0.132), 0 0.3px 0.9px 0 rgba(0,0,0,0.108);
+    --shadow-md: 0 3.2px 7.2px 0 rgba(0,0,0,0.132), 0 0.6px 1.8px 0 rgba(0,0,0,0.108);
+    --shadow-lg: 0 6.4px 14.4px 0 rgba(0,0,0,0.132), 0 1.2px 3.6px 0 rgba(0,0,0,0.108);
+    
+    /* Typography */
+    --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    --font-size-xs: 11px;
+    --font-size-sm: 12px;
+    --font-size-md: 14px;
+    --font-size-lg: 16px;
+    --font-size-xl: 20px;
+    --font-size-xxl: 28px;
+    --font-size-xxxl: 36px;
+    
+    /* Transitions */
+    --transition-fast: 0.1s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #0078d4 0%, #00b294 100%);
+    --gradient-card: linear-gradient(180deg, #ffffff 0%, #faf9f8 100%);
+    
+    /* Z-Index */
+    --z-sidebar: 100;
+    --z-modal: 1000;
+}
+
+/* Dark Mode */
+.dark-mode {
+    --bg-primary: #1b1b1b;
+    --bg-secondary: #252525;
+    --bg-card: #2d2d2d;
+    --bg-sidebar: #1f1f1f;
+    --bg-hover: #383838;
+    
+    --text-primary: #f3f3f3;
+    --text-secondary: #c8c8c8;
+    --text-muted: #8a8a8a;
+    
+    --border-color: #404040;
+    --shadow-sm: 0 1.6px 3.6px 0 rgba(0,0,0,0.4);
+    --shadow-md: 0 3.2px 7.2px 0 rgba(0,0,0,0.4);
+    --shadow-lg: 0 6.4px 14.4px 0 rgba(0,0,0,0.4);
+    
+    --gradient-card: linear-gradient(180deg, #2d2d2d 0%, #252525 100%);
+    
+    --heatmap-low: #1a3a2a;
+    --heatmap-mid: #1a4a6e;
+    --heatmap-high: #0078d4;
+}

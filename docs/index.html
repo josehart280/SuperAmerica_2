@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperAmerica - Dashboard BI</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <style>
+        /* Home-specific styles */
+        .hero-section {
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .hero-title {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(135deg, var(--color-primary), #34a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .quick-stat {
+            background: linear-gradient(135deg, var(--color-primary), #1a73e8);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius-lg);
+            text-align: center;
+        }
+        
+        .quick-stat:nth-child(2) {
+            background: linear-gradient(135deg, #34a853, #2d8f47);
+        }
+        
+        .quick-stat:nth-child(3) {
+            background: linear-gradient(135deg, #fbbc04, #e6a800);
+        }
+        
+        .quick-stat:nth-child(4) {
+            background: linear-gradient(135deg, #9334e6, #7b2fc9);
+        }
+        
+        .quick-stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .quick-stat-label {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+        }
+        
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+        }
+        
+        .menu-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .menu-card-icon {
+            font-size: 48px;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .menu-card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .menu-card-desc {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+        
+        .menu-card.beta {
+            position: relative;
+        }
+        
+        .menu-card.beta::after {
+            content: 'Beta';
+            position: absolute;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
+            background: var(--color-secondary);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1024px) {
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <sa-sidebar></sa-sidebar>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <sa-header title="Dashboard Business Intelligence"></sa-header>
+
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <h1 class="hero-title">Bienvenido a SuperAmerica</h1>
+                <p class="hero-subtitle">Analiza tus datos de ventas, productos e insights en tiempo real</p>
+            </section>
+
+            <!-- Quick Stats -->
+            <section class="quick-stats" id="quick-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="q1-total">Cargando...</div>
+                    <div class="quick-stat-label">Ventas Q1 2026</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="best-month">--</div>
+                    <div class="quick-stat-label">Mejor Mes</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="transactions">--</div>
+                    <div class="quick-stat-label">Transacciones</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="avg-ticket">--</div>
+                    <div class="quick-stat-label">Ticket Promedio</div>
+                </div>
+            </section>
+
+            <!-- Menu Grid -->
+            <section class="menu-grid">
+                <a href="/pages/resumen.html" class="menu-card">
+                    <div class="menu-card-icon">📊</div>
+                    <div class="menu-card-title">Resumen</div>
+                    <div class="menu-card-desc">KPIs y métricas generales del negocio</div>
+                </a>
+                
+                <a href="/pages/ventas.html" class="menu-card">
+                    <div class="menu-card-icon">💰</div>
+                    <div class="menu-card-title">Ventas</div>
+                    <div class="menu-card-desc">Evolución mensual y comparación de períodos</div>
+                </a>
+                
+                <a href="/pages/productos.html" class="menu-card">
+                    <div class="menu-card-icon">🛒</div>
+                    <div class="menu-card-title">Productos</div>
+                    <div class="menu-card-desc">Top productos y análisis de categorías</div>
+                </a>
+                
+                <a href="/pages/insights.html" class="menu-card">
+                    <div class="menu-card-icon">💡</div>
+                    <div class="menu-card-title">Hallazgos del Mes</div>
+                    <div class="menu-card-desc">Reportes detallados y recomendaciones</div>
+                </a>
+                
+                <a href="/pages/predicciones.html" class="menu-card beta">
+                    <div class="menu-card-icon">📈</div>
+                    <div class="menu-card-title">Predicciones</div>
+                    <div class="menu-card-desc">Forecast de ventas con machine learning</div>
+                </a>
+                
+                <a href="/pages/settings.html" class="menu-card">
+                    <div class="menu-card-icon">⚙️</div>
+                    <div class="menu-card-title">Configuración</div>
+                    <div class="menu-card-desc">Personaliza tu experiencia</div>
+                </a>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/components/Sidebar.js"></script>
+    <script src="/js/components/Header.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load monthly data
+                const response = await fetch('/data/datos_mensuales.json');
+                const data = await response.json();
+                
+                // Calculate Q1 total
+                const totalQ1 = (data.Enero?.total_ventas || 0) + 
+                               (data.Febrero?.total_ventas || 0) + 
+                               (data.Marzo?.total_ventas || 0);
+                
+                // Find best month
+                let bestMonth = { name: '--', value: 0 };
+                Object.entries(data).forEach(([month, values]) => {
+                    if (values.total_ventas > bestMonth.value) {
+                        bestMonth = { name: month, value: values.total_ventas };
+                    }
+                });
+                
+                // Calculate total transactions
+                const totalTransactions = (data.Enero?.count_transacciones || 0) + 
+                                        (data.Febrero?.count_transacciones || 0) + 
+                                        (data.Marzo?.count_transacciones || 0);
+                
+                // Calculate average ticket
+                const avgTicket = totalQ1 / totalTransactions;
+                
+                // Update UI
+                document.getElementById('q1-total').textContent = formatCurrency(totalQ1);
+                document.getElementById('best-month').textContent = bestMonth.name;
+                document.getElementById('transactions').textContent = totalTransactions.toLocaleString();
+                document.getElementById('avg-ticket').textContent = formatCurrency(avgTicket);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Format currency
+        function formatCurrency(value) {
+            return '₡' + Math.round(value).toLocaleString();
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+        }
+        
+        // Load theme preference
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo Claro';
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
