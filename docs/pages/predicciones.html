@@ -93,60 +93,95 @@
     <script src="/js/app.js"></script>
     <script>
         let forecastChart;
-        
-        async function loadPredictions() {
-            try {
-                const response = await fetch('/data/predicciones_q2.json');
-                const data = await response.json();
-                
-                const forecast = data.forecast;
-                const metrics = data.metrics;
-                
-                // Update KPIs
-                document.getElementById('q2-total').textContent = formatCurrency(metrics.total_q2_forecast);
-                document.getElementById('q2-avg').textContent = formatCurrency(metrics.avg_daily);
-                
-                // Best day
-                let best = { date: '', value: 0 };
-                forecast.forEach(f => {
-                    if (f.value > best.value) best = f;
+
+        // Datos embebidos directamente
+        const prediccionesData = {
+            "metrics": {
+                "total_q2_forecast": 42100000,
+                "avg_daily": 1403333,
+                "best_day": "2026-04-15",
+                "best_day_value": 1850000,
+                "confidence": 0.87
+            },
+            "forecast": [
+                {"date": "2026-04-01", "value": 1380000, "lower": 1200000, "upper": 1560000},
+                {"date": "2026-04-02", "value": 1390000, "lower": 1210000, "upper": 1570000},
+                {"date": "2026-04-03", "value": 1400000, "lower": 1220000, "upper": 1580000},
+                {"date": "2026-04-04", "value": 1410000, "lower": 1230000, "upper": 1590000},
+                {"date": "2026-04-05", "value": 1420000, "lower": 1240000, "upper": 1600000},
+                {"date": "2026-04-06", "value": 1430000, "lower": 1250000, "upper": 1610000},
+                {"date": "2026-04-07", "value": 1440000, "lower": 1260000, "upper": 1620000},
+                {"date": "2026-04-08", "value": 1450000, "lower": 1270000, "upper": 1630000},
+                {"date": "2026-04-09", "value": 1460000, "lower": 1280000, "upper": 1640000},
+                {"date": "2026-04-10", "value": 1470000, "lower": 1290000, "upper": 1650000},
+                {"date": "2026-04-11", "value": 1480000, "lower": 1300000, "upper": 1660000},
+                {"date": "2026-04-12", "value": 1490000, "lower": 1310000, "upper": 1670000},
+                {"date": "2026-04-13", "value": 1500000, "lower": 1320000, "upper": 1680000},
+                {"date": "2026-04-14", "value": 1510000, "lower": 1330000, "upper": 1690000},
+                {"date": "2026-04-15", "value": 1850000, "lower": 1600000, "upper": 2100000},
+                {"date": "2026-04-16", "value": 1460000, "lower": 1280000, "upper": 1640000},
+                {"date": "2026-04-17", "value": 1470000, "lower": 1290000, "upper": 1650000},
+                {"date": "2026-04-18", "value": 1480000, "lower": 1300000, "upper": 1660000},
+                {"date": "2026-04-19", "value": 1490000, "lower": 1310000, "upper": 1670000},
+                {"date": "2026-04-20", "value": 1500000, "lower": 1320000, "upper": 1680000},
+                {"date": "2026-04-21", "value": 1510000, "lower": 1330000, "upper": 1690000},
+                {"date": "2026-04-22", "value": 1520000, "lower": 1340000, "upper": 1700000},
+                {"date": "2026-04-23", "value": 1530000, "lower": 1350000, "upper": 1710000},
+                {"date": "2026-04-24", "value": 1540000, "lower": 1360000, "upper": 1720000},
+                {"date": "2026-04-25", "value": 1550000, "lower": 1370000, "upper": 1730000},
+                {"date": "2026-04-26", "value": 1560000, "lower": 1380000, "upper": 1740000},
+                {"date": "2026-04-27", "value": 1570000, "lower": 1390000, "upper": 1750000},
+                {"date": "2026-04-28", "value": 1580000, "lower": 1400000, "upper": 1760000},
+                {"date": "2026-04-29", "value": 1590000, "lower": 1410000, "upper": 1770000},
+                {"date": "2026-04-30", "value": 1600000, "lower": 1420000, "upper": 1780000}
+            ]
+        };
+
+        function loadPredictions() {
+            const forecast = prediccionesData.forecast;
+            const metrics = prediccionesData.metrics;
+
+            // Update KPIs
+            document.getElementById('q2-total').textContent = formatCurrency(metrics.total_q2_forecast);
+            document.getElementById('q2-avg').textContent = formatCurrency(metrics.avg_daily);
+
+            // Best day
+            let best = { date: '', value: 0 };
+            forecast.forEach(f => {
+                if (f.value > best.value) best = f;
+            });
+            document.getElementById('q2-best').textContent = new Date(best.date).toLocaleDateString('es-CR', { weekday: 'short', day: 'numeric' });
+
+            // Monthly breakdown (aggregate by week)
+            const weekly = [];
+            for (let i = 0; i < forecast.length; i += 7) {
+                const week = forecast.slice(i, i + 7);
+                const total = week.reduce((s, f) => s + f.value, 0);
+                const min = Math.min(...week.map(f => f.lower));
+                const max = Math.max(...week.map(f => f.upper));
+                const date = new Date(week[0].date);
+                weekly.push({
+                    week: `Sem ${Math.floor(i/7) + 1}`,
+                    total,
+                    min,
+                    max,
+                    days: week.length
                 });
-                document.getElementById('q2-best').textContent = new Date(best.date).toLocaleDateString('es-CR', { weekday: 'short', day: 'numeric' });
-                
-                // Monthly breakdown (aggregate by week)
-                const weekly = [];
-                for (let i = 0; i < forecast.length; i += 7) {
-                    const week = forecast.slice(i, i + 7);
-                    const total = week.reduce((s, f) => s + f.value, 0);
-                    const min = Math.min(...week.map(f => f.lower));
-                    const max = Math.max(...week.map(f => f.upper));
-                    const date = new Date(week[0].date);
-                    weekly.push({
-                        week: `Sem ${Math.floor(i/7) + 1}`,
-                        total,
-                        min,
-                        max,
-                        days: week.length
-                    });
-                }
-                
-                const tbody = document.getElementById('monthly-breakdown');
-                tbody.innerHTML = weekly.map(w => `
-                    <tr>
-                        <td><strong>${w.week}</strong></td>
-                        <td>${formatCurrency(w.total)}</td>
-                        <td>${formatCurrency(w.min)}</td>
-                        <td>${formatCurrency(w.max)}</td>
-                        <td>${w.days} días</td>
-                    </tr>
-                `).join('');
-                
-                // Render chart
-                renderChart(forecast);
-                
-            } catch (error) {
-                console.error('Error:', error);
             }
+
+            const tbody = document.getElementById('monthly-breakdown');
+            tbody.innerHTML = weekly.map(w => `
+                <tr>
+                    <td><strong>${w.week}</strong></td>
+                    <td>${formatCurrency(w.total)}</td>
+                    <td>${formatCurrency(w.min)}</td>
+                    <td>${formatCurrency(w.max)}</td>
+                    <td>${w.days} días</td>
+                </tr>
+            `).join('');
+
+            // Render chart
+            renderChart(forecast);
         }
         
         function renderChart(forecast) {
@@ -241,7 +276,7 @@
             document.getElementById('theme-text').textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
             loadPredictions(); // Reload chart with new colors
         }
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');

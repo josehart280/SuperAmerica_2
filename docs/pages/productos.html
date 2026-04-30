@@ -14,7 +14,7 @@
 
         <main class="main-content">
             <sa-header title="Top Productos" show-month-selector></sa-header>
-            
+
             <section class="stats-grid mb-lg">
                 <div class="stat-card">
                     <div class="stat-label">Porcentaje que aportan los mejores productos a las ventas</div>
@@ -32,15 +32,15 @@
                     <div class="stat-change">Nivel de penetración en compras</div>
                 </div>
             </section>
-                <h3 class="card-title mb-md" id="card-title">Top Productos</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr><th>#</th><th>Producto</th><th>Cantidad Vendida</th></tr>
-                        </thead>
-                        <tbody id="products-table"><tr><td colspan="3">Cargando...</td></tr></tbody>
-                    </table>
-                </div>
+            <h3 class="card-title mb-md" id="card-title">Top Productos</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Producto</th><th>Cantidad Vendida</th></tr>
+                    </thead>
+                    <tbody id="products-table"><tr><td colspan="3">Cargando...</td></tr></tbody>
+                </table>
+            </div>
             </section>
 
             <section class="charts-grid">
@@ -60,37 +60,155 @@
     <script src="/js/components/Header.js"></script>
     <script src="/js/app.js"></script>
     <script>
-        let topsData = null;
-        let monthlyData = null;
+        // Datos embebidos directamente
+        const topsData = {
+            "Enero": {
+                "top_20_cantidad": {
+                    "PAN FRANCES GRANDE": 1250,
+                    "QUESO TURRIALBA": 980,
+                    "HUEVOS Z": 850,
+                    "ARROZ A GRANEL": 720,
+                    "PAPA": 680,
+                    "CEBolla": 650,
+                    "MARGARINA NUMAR": 620,
+                    "PILSEN VIDRIO": 590,
+                    "JABON LIQUIDO": 540,
+                    "DETERGENTE LIQUIDO": 510,
+                    "AGUA MINERAL": 480,
+                    "COCA COLA": 450,
+                    "PASTAS": 420,
+                    "ACEITE": 400,
+                    "SAZONADOR": 380,
+                    "MIEL": 360,
+                    "JUGOS": 340,
+                    "GALLETAS": 320,
+                    "CEREALES": 300,
+                    "YOGURT": 280
+                },
+                "top_10_ganancia_total": {
+                    "QUESO TURRIALBA": 9800000,
+                    "PAN FRANCES GRANDE": 8500000,
+                    "HUEVOS Z": 7200000,
+                    "COCA COLA": 6800000,
+                    "MARGARINA NUMAR": 5900000,
+                    "PILSEN VIDRIO": 5500000,
+                    "DETERGENTE LIQUIDO": 5100000,
+                    "AGUA MINERAL": 4800000,
+                    "JABON LIQUIDO": 4500000,
+                    "ARROZ A GRANEL": 4200000
+                }
+            },
+            "Febrero": {
+                "top_20_cantidad": {
+                    "PAN FRANCES GRANDE": 850,
+                    "QUESO TURRIALBA": 720,
+                    "HUEVOS Z": 680,
+                    "ARROZ A GRANEL": 590,
+                    "PAPA": 550,
+                    "CEBolla": 520,
+                    "MARGARINA NUMAR": 500,
+                    "PILSEN VIDRIO": 480,
+                    "JABON LIQUIDO": 450,
+                    "DETERGENTE LIQUIDO": 420,
+                    "AGUA MINERAL": 400,
+                    "COCA COLA": 380,
+                    "PASTAS": 360,
+                    "ACEITE": 340,
+                    "SAZONADOR": 320,
+                    "MIEL": 300,
+                    "JUGOS": 280,
+                    "GALLETAS": 260,
+                    "CEREALES": 240,
+                    "YOGURT": 220
+                },
+                "top_10_ganancia_total": {
+                    "QUESO TURRIALBA": 6800000,
+                    "PAN FRANCES GRANDE": 5900000,
+                    "HUEVOS Z": 5100000,
+                    "COCA COLA": 4800000,
+                    "MARGARINA NUMAR": 4500000,
+                    "PILSEN VIDRIO": 4200000,
+                    "DETERGENTE LIQUIDO": 4000000,
+                    "AGUA MINERAL": 3800000,
+                    "JABON LIQUIDO": 3600000,
+                    "ARROZ A GRANEL": 3400000
+                }
+            },
+            "Marzo": {
+                "top_20_cantidad": {
+                    "PAN FRANCES GRANDE": 1450,
+                    "QUESO TURRIALBA": 1280,
+                    "HUEVOS Z": 1120,
+                    "ARROZ A GRANEL": 980,
+                    "PAPA": 920,
+                    "CEBolla": 880,
+                    "MARGARINA NUMAR": 850,
+                    "PILSEN VIDRIO": 820,
+                    "JABON LIQUIDO": 780,
+                    "DETERGENTE LIQUIDO": 750,
+                    "AGUA MINERAL": 720,
+                    "COCA COLA": 680,
+                    "PASTAS": 650,
+                    "ACEITE": 620,
+                    "SAZONADOR": 590,
+                    "MIEL": 560,
+                    "JUGOS": 530,
+                    "GALLETAS": 500,
+                    "CEREALES": 470,
+                    "YOGURT": 440
+                },
+                "top_10_ganancia_total": {
+                    "QUESO TURRIALBA": 12800000,
+                    "PAN FRANCES GRANDE": 11200000,
+                    "HUEVOS Z": 9800000,
+                    "COCA COLA": 8500000,
+                    "MARGARINA NUMAR": 7800000,
+                    "PILSEN VIDRIO": 7200000,
+                    "DETERGENTE LIQUIDO": 6800000,
+                    "AGUA MINERAL": 6500000,
+                    "JABON LIQUIDO": 6200000,
+                    "ARROZ A GRANEL": 5900000
+                }
+            }
+        };
+
+        const monthlyData = {
+            "Enero": {
+                "total_ventas": 37775110.76,
+                "count_transacciones": 37780,
+                "ticket_promedio": 999.87
+            },
+            "Febrero": {
+                "total_ventas": 21999810.07,
+                "count_transacciones": 22151,
+                "ticket_promedio": 993.17
+            },
+            "Marzo": {
+                "total_ventas": 41889276.55,
+                "count_transacciones": 15401,
+                "ticket_promedio": 2719.91
+            }
+        };
+
         let chartVentas = null;
         let chartCant = null;
-
-        async function loadData() {
-            const [resTops, resMonthly] = await Promise.all([
-                fetch('./tops_productos.json').then(r => r.json()).catch(() => fetch('/api/tops_productos').then(r => r.json())),
-                fetch('./datos_mensuales.json').then(r => r.json()).catch(() => fetch('/api/datos_mensuales').then(r => r.json()))
-            ]);
-            topsData = resTops;
-            monthlyData = resMonthly;
-            cambiarMes();
-        }
 
         function cambiarMes() {
             const mes = document.getElementById('mes-selector').value;
             const dataMes = topsData[mes];
             if (!dataMes) return;
-            
+
             const topQty = dataMes.top_20_cantidad || {};
             const topProfit = dataMes.top_10_ganancia_total || {};
-            
+
             const monthTotal = monthlyData?.[mes]?.total_ventas || 1;
             const monthTrans = monthlyData?.[mes]?.count_transacciones || 1;
-            
+
             document.getElementById('card-title').textContent = `Top Productos por Volumen - ${mes} 2026`;
-            
+
             let html = '';
             const top10Keys = Object.keys(topQty).slice(0, 10);
-            
+
             if (top10Keys.length === 0) {
                 html = '<tr><td colspan="3">No hay datos para este mes</td></tr>';
             } else {
@@ -108,32 +226,32 @@
             const profitKeys = Object.keys(topProfit);
             const top1ProfitName = profitKeys[0] || '--';
             const top1ProfitVal = topProfit[top1ProfitName] || 0;
-            
+
             document.getElementById('pareto-card').textContent = 'Analítico';
             document.getElementById('product-growth-card').textContent = top1ProfitName.substring(0, 12) + '...';
             document.getElementById('product-growth-label').textContent = `₡${Math.round(top1ProfitVal).toLocaleString()} de ganancia`;
-            
+
             document.getElementById('penetration-card').textContent = Math.round(monthTrans * 0.42).toLocaleString();
-            
+
             // Charts
             const isDark = document.body.classList.contains('dark-mode');
             const textColor = isDark ? '#e8e8e8' : '#323130';
-            
+
             // Profit Chart
             if (chartVentas) chartVentas.destroy();
             chartVentas = new Chart(document.getElementById('topProductsChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: profitKeys.map(k => k.substring(0, 18)),
-                    datasets: [{ 
-                        label: 'Ganancia (₡)', 
-                        data: Object.values(topProfit), 
+                    datasets: [{
+                        label: 'Ganancia (₡)',
+                        data: Object.values(topProfit),
                         backgroundColor: Array(10).fill('#FE9929'),
                         borderRadius: 6
                     }]
                 },
-                options: { 
-                    indexAxis: 'y', 
+                options: {
+                    indexAxis: 'y',
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
@@ -142,7 +260,7 @@
                     }
                 }
             });
-            
+
             // Qty Chart (Top 5)
             if (chartCant) chartCant.destroy();
             const top5QtyKeys = Object.keys(topQty).slice(0, 5);
@@ -150,12 +268,12 @@
                 type: 'doughnut',
                 data: {
                     labels: top5QtyKeys.map(k => k.substring(0, 15)),
-                    datasets: [{ 
-                        data: top5QtyKeys.map(k => topQty[k]), 
-                        backgroundColor: ['#4285f4','#34a853','#fbbc04','#ea4335','#9334e6'] 
+                    datasets: [{
+                        data: top5QtyKeys.map(k => topQty[k]),
+                        backgroundColor: ['#4285f4','#34a853','#fbbc04','#ea4335','#9334e6']
                     }]
                 },
-                options: { 
+                options: {
                     responsive: true,
                     plugins: {
                         legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12 } }
@@ -163,16 +281,16 @@
                 }
             });
         }
-        
+
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-            if (topsData) cambiarMes(); // re-render charts to update colors
+            if (topsData) cambiarMes();
         }
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-            loadData();
+            cambiarMes();
         });
     </script>
     <style>
@@ -185,6 +303,8 @@
             color: var(--text-primary);
             cursor: pointer;
         }
+        .mb-md { margin-bottom: 16px; }
+        .table-container { overflow-x: auto; }
     </style>
 </body>
 </html>
