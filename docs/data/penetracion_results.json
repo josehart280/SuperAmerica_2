@@ -1,0 +1,53 @@
+{
+    "Enero": {
+        "total_rows": 37780,
+        "completeness": {
+            "score": 100.0,
+            "null_fields": {}
+        },
+        "consistency": {
+            "score": 97.71836950767602,
+            "duplicates": 0,
+            "outliers_total": 1724
+        },
+        "coverage": {
+            "score": 100.0
+        },
+        "global_score": 99.31551085230281,
+        "status": "\ud83d\udfe2"
+    },
+    "Febrero": {
+        "total_rows": 22151,
+        "completeness": {
+            "score": 100.0,
+            "null_fields": {}
+        },
+        "consistency": {
+            "score": 97.72696492257687,
+            "duplicates": 0,
+            "outliers_total": 1007
+        },
+        "coverage": {
+            "score": 100.0
+        },
+        "global_score": 99.31808947677305,
+        "status": "\ud83d\udfe2"
+    },
+    "Marzo": {
+        "total_rows": 15401,
+        "completeness": {
+            "score": 100.0,
+            "null_fields": {}
+        },
+        "consistency": {
+            "score": 96.43854295175638,
+            "duplicates": 0,
+            "outliers_total": 1097
+        },
+        "coverage": {
+            "score": 99.99350691513538
+        },
+        "global_score": 98.92961496006752,
+        "status": "\ud83d\udfe2"
+    }
+}

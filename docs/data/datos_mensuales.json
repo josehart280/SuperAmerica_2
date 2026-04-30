@@ -1,0 +1,17 @@
+{
+    "Enero": {
+        "total_ventas": 37775110.75503959,
+        "count_transacciones": 37780,
+        "ticket_promedio": 999.8705864224348
+    },
+    "Febrero": {
+        "total_ventas": 21999810.0700159,
+        "count_transacciones": 22151,
+        "ticket_promedio": 993.1745776721548
+    },
+    "Marzo": {
+        "total_ventas": 41889276.551453404,
+        "count_transacciones": 15401,
+        "ticket_promedio": 2719.9062756608923
+    }
+}

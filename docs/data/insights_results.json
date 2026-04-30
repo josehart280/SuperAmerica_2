@@ -1,0 +1,137 @@
+{
+    "Enero": {
+        "resumen_general": {
+            "venta_total": 37775110.75503959,
+            "ticket_promedio": 999.8705864224348,
+            "iva_estimado": 4345809.201907209,
+            "transacciones": 37780,
+            "crecimiento_ticket_pct": 0.0,
+            "margen_bruto_pct": 22.0,
+            "utilidad_bruta_est": 8310524.37
+        },
+        "autoconsumo": {
+            "total_monto": 564022.1043775859,
+            "transacciones": 491,
+            "descripcion": "Se detectaron 491 transacciones de autoconsumo sumando \u20a1564,022.10.",
+            "plan_accion": "Auditar mensualmente los retiros de mercader\u00eda por parte de los socios para asegurar que el registro contable refleje el costo real y no infle artificialmente la utilidad bruta."
+        },
+        "planes_accion": [
+            {
+                "prioridad": "Alta",
+                "hallazgo": "Horas Pico Identificadas: 11:47:15:00 y 12:53:42:00",
+                "evidencia": "El 0.2% de las ventas del mes se concentran en estos horarios. En t\u00e9rminos de caja, son los momentos m\u00e1s cr\u00edticos del d\u00eda.",
+                "accion": "Asegurar que haya al menos 2 cajeros disponibles entre las 11:47:15:00 y 12:53:42:00. Reponer estanter\u00edas de productos de alta rotaci\u00f3n (pan, l\u00e1cteos, huevos) antes de esas horas, no durante."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "El 31.6% de las ventas est\u00e1n por debajo de la mitad del ticket promedio",
+                "evidencia": "Ticket promedio del mes: \u20a11,000. 11,946 transacciones fueron de menos de \u20a1500 \u2014 son compras de 1 solo art\u00edculo.",
+                "accion": "Implementar 'combos de oportunidad' en caja: ofrecer verbalmente productos de \u20a1500-\u20a11,000 (confite, chicle, agua) para convertir compras de \u00edtem \u00fanico en ticket doble."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "Patr\u00f3n de compra detectado: HUEVOS",
+                "evidencia": "490 transacciones con HUEVOS en el mes (\u20a1460,135). Mayor actividad a las 07:17:46:00. Producto de compra recurrente y predecible.",
+                "accion": "Crear una 'isla de combinaci\u00f3n' junto al HUEVOS: colocar Pan Cuadrado o Caf\u00e9 molido al lado. Esta t\u00e9cnica de merchandising puede incrementar el ticket en un 8-12% sin promociones."
+            },
+            {
+                "prioridad": "Alta",
+                "hallazgo": "Dependencia en productos estrella",
+                "evidencia": "Solo 3 productos (QUESO TURRIALBA, PAN FRANCES GRANDE, HUEVOS Z) generan el 6.4% de tus ingresos totales. Riesgo alto si uno falla en stock.",
+                "accion": "Establecer un stock m\u00ednimo de seguridad de 15 d\u00edas para estos 3 productos. Negociar con el proveedor prioridad de entrega o buscar proveedor alternativo como respaldo."
+            }
+        ]
+    },
+    "Febrero": {
+        "resumen_general": {
+            "venta_total": 21999810.0700159,
+            "ticket_promedio": 993.1745776721548,
+            "iva_estimado": 2530951.600975281,
+            "transacciones": 22151,
+            "crecimiento_ticket_pct": -0.67,
+            "margen_bruto_pct": 22.0,
+            "utilidad_bruta_est": 4839958.22
+        },
+        "autoconsumo": {
+            "total_monto": 338935.85437111306,
+            "transacciones": 263,
+            "descripcion": "Se detectaron 263 transacciones de autoconsumo sumando \u20a1338,935.85.",
+            "plan_accion": "Auditar mensualmente los retiros de mercader\u00eda por parte de los socios para asegurar que el registro contable refleje el costo real y no infle artificialmente la utilidad bruta."
+        },
+        "planes_accion": [
+            {
+                "prioridad": "Alta",
+                "hallazgo": "Horas Pico Identificadas: 20:15:15:00 y 15:50:32:00",
+                "evidencia": "El 0.5% de las ventas del mes se concentran en estos horarios. En t\u00e9rminos de caja, son los momentos m\u00e1s cr\u00edticos del d\u00eda.",
+                "accion": "Asegurar que haya al menos 2 cajeros disponibles entre las 20:15:15:00 y 15:50:32:00. Reponer estanter\u00edas de productos de alta rotaci\u00f3n (pan, l\u00e1cteos, huevos) antes de esas horas, no durante."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "El 31.5% de las ventas est\u00e1n por debajo de la mitad del ticket promedio",
+                "evidencia": "Ticket promedio del mes: \u20a1993. 6,967 transacciones fueron de menos de \u20a1497 \u2014 son compras de 1 solo art\u00edculo.",
+                "accion": "Implementar 'combos de oportunidad' en caja: ofrecer verbalmente productos de \u20a1500-\u20a11,000 (confite, chicle, agua) para convertir compras de \u00edtem \u00fanico en ticket doble."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "Patr\u00f3n de compra detectado: HUEVOS",
+                "evidencia": "276 transacciones con HUEVOS en el mes (\u20a1253,089). Mayor actividad a las 07:10:49:00. Producto de compra recurrente y predecible.",
+                "accion": "Crear una 'isla de combinaci\u00f3n' junto al HUEVOS: colocar Pan Cuadrado o Caf\u00e9 molido al lado. Esta t\u00e9cnica de merchandising puede incrementar el ticket en un 8-12% sin promociones."
+            },
+            {
+                "prioridad": "Alta",
+                "hallazgo": "Dependencia en productos estrella",
+                "evidencia": "Solo 3 productos (QUESO TURRIALBA, PAN FRANCES GRANDE, AGUACATE HASS) generan el 6.2% de tus ingresos totales. Riesgo alto si uno falla en stock.",
+                "accion": "Establecer un stock m\u00ednimo de seguridad de 15 d\u00edas para estos 3 productos. Negociar con el proveedor prioridad de entrega o buscar proveedor alternativo como respaldo."
+            }
+        ]
+    },
+    "Marzo": {
+        "resumen_general": {
+            "venta_total": 41889276.551453404,
+            "ticket_promedio": 2719.9062756608923,
+            "iva_estimado": 4819120.311229154,
+            "transacciones": 15401,
+            "crecimiento_ticket_pct": 173.86,
+            "margen_bruto_pct": 22.0,
+            "utilidad_bruta_est": 9215640.84
+        },
+        "autoconsumo": {
+            "total_monto": 580034.8585679223,
+            "transacciones": 128,
+            "descripcion": "Se detectaron 128 transacciones de autoconsumo sumando \u20a1580,034.86.",
+            "plan_accion": "Auditar mensualmente los retiros de mercader\u00eda por parte de los socios para asegurar que el registro contable refleje el costo real y no infle artificialmente la utilidad bruta."
+        },
+        "planes_accion": [
+            {
+                "prioridad": "Alta",
+                "hallazgo": "Horas Pico Identificadas: 12:08:14:00 y 20:15:32:00",
+                "evidencia": "El 0.6% de las ventas del mes se concentran en estos horarios. En t\u00e9rminos de caja, son los momentos m\u00e1s cr\u00edticos del d\u00eda.",
+                "accion": "Asegurar que haya al menos 2 cajeros disponibles entre las 12:08:14:00 y 20:15:32:00. Reponer estanter\u00edas de productos de alta rotaci\u00f3n (pan, l\u00e1cteos, huevos) antes de esas horas, no durante."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "El 42.0% de las ventas est\u00e1n por debajo de la mitad del ticket promedio",
+                "evidencia": "Ticket promedio del mes: \u20a12,720. 6,473 transacciones fueron de menos de \u20a11,360 \u2014 son compras de 1 solo art\u00edculo.",
+                "accion": "Implementar 'combos de oportunidad' en caja: ofrecer verbalmente productos de \u20a1500-\u20a11,000 (confite, chicle, agua) para convertir compras de \u00edtem \u00fanico en ticket doble."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "Patr\u00f3n de compra detectado: HUEVOS",
+                "evidencia": "227 transacciones con HUEVOS en el mes (\u20a1582,855). Mayor actividad a las 07:14:01:00. Producto de compra recurrente y predecible.",
+                "accion": "Crear una 'isla de combinaci\u00f3n' junto al HUEVOS: colocar Pan Cuadrado o Caf\u00e9 molido al lado. Esta t\u00e9cnica de merchandising puede incrementar el ticket en un 8-12% sin promociones."
+            },
+            {
+                "prioridad": "Alta",
+                "hallazgo": "Dependencia en productos estrella",
+                "evidencia": "Solo 3 productos (AGUACATE HASS, QUESO TURRIALBA, TOMATE) generan el 8.4% de tus ingresos totales. Riesgo alto si uno falla en stock.",
+                "accion": "Establecer un stock m\u00ednimo de seguridad de 15 d\u00edas para estos 3 productos. Negociar con el proveedor prioridad de entrega o buscar proveedor alternativo como respaldo."
+            },
+            {
+                "prioridad": "Media",
+                "hallazgo": "Ticket promedio creci\u00f3 +173.9% vs mes anterior",
+                "evidencia": "Pas\u00f3 de \u20a1993 a \u20a12,720. Se\u00f1al positiva: los clientes est\u00e1n comprando m\u00e1s por visita.",
+                "accion": "Capitalizar esta tendencia: introducir productos premium (vinos, quesos especiales) cerca de los art\u00edculos de alta rotaci\u00f3n para elevar a\u00fan m\u00e1s el ticket."
+            }
+        ]
+    }
+}
