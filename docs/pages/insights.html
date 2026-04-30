@@ -69,24 +69,144 @@
     <script src="/js/components/Header.js"></script>
     <script src="/js/app.js"></script>
     <script>
-        let datosInsights = null;
-
-        async function init() {
-            try {
-                // Intentar desde data/ primero (Vercel/static), luego API (server)
-                datosInsights = await fetch('./insights_results.json')
-                    .then(r => r.json())
-                    .catch(() => fetch('/api/insights_results').then(r => r.json()));
-                cargarHallazgos();
-            } catch (e) {
-                console.error('Error cargando insights:', e);
-                document.getElementById('halla-ventas').textContent = 'Error de carga';
+        // Datos embebidos directamente - no requiere fetch
+        const datosInsights = {
+            "Enero": {
+                "resumen_general": {
+                    "venta_total": 37775110.76,
+                    "ticket_promedio": 999.87,
+                    "iva_estimado": 4345809.20,
+                    "transacciones": 37780,
+                    "crecimiento_ticket_pct": 0.0,
+                    "margen_bruto_pct": 22.0,
+                    "utilidad_bruta_est": 8310524.37
+                },
+                "autoconsumo": {
+                    "total_monto": 564022.10,
+                    "transacciones": 491,
+                    "descripcion": "Se detectaron 491 transacciones de autoconsumo sumando ₡564,022.10.",
+                    "plan_accion": "Auditar mensualmente los retiros de mercadería por parte de los socios para asegurar que el registro contable refleje el costo real y no infle artificialmente la utilidad bruta."
+                },
+                "planes_accion": [
+                    {
+                        "prioridad": "Alta",
+                        "hallazgo": "Horas Pico: 11:47 y 12:53",
+                        "evidencia": "El 0.2% de las ventas se concentran en estos horarios. Momentos más críticos del día.",
+                        "accion": "Asegurar al menos 2 cajeros disponibles entre 11:47 y 12:53. Reponer productos de alta rotación antes de esas horas."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "31.6% de ventas por debajo de la mitad del ticket",
+                        "evidencia": "Ticket promedio: ₡1,000. 11,946 transacciones fueron de menos de ₡500.",
+                        "accion": "Implementar 'combos de oportunidad' en caja: ofrecer productos de ₡500-₡1,000 (confite, chicle, agua)."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "Patrón de compra: HUEVOS",
+                        "evidencia": "490 transacciones con HUEVOS en el mes (₡460,135). Mayor actividad a las 07:17.",
+                        "accion": "Crear 'isla de combinación' junto al HUEVOS: colocar Pan Cuadrado o Café molido al lado."
+                    },
+                    {
+                        "prioridad": "Alta",
+                        "hallazgo": "Dependencia en productos estrella",
+                        "evidencia": "Solo 3 productos (QUESO TURRIALBA, PAN FRANCES GRANDE, HUEVOS Z) generan el 6.4% de ingresos.",
+                        "accion": "Establecer stock mínimo de seguridad de 15 días para estos 3 productos."
+                    }
+                ]
+            },
+            "Febrero": {
+                "resumen_general": {
+                    "venta_total": 21999810.07,
+                    "ticket_promedio": 993.17,
+                    "iva_estimado": 2530951.60,
+                    "transacciones": 22151,
+                    "crecimiento_ticket_pct": -0.67,
+                    "margen_bruto_pct": 22.0,
+                    "utilidad_bruta_est": 4839958.22
+                },
+                "autoconsumo": {
+                    "total_monto": 338935.85,
+                    "transacciones": 263,
+                    "descripcion": "Se detectaron 263 transacciones de autoconsumo sumando ₡338,935.85.",
+                    "plan_accion": "Auditar mensualmente los retiros de mercadería por parte de los socios."
+                },
+                "planes_accion": [
+                    {
+                        "prioridad": "Alta",
+                        "hallazgo": "Horas Pico: 20:15 y 15:50",
+                        "evidencia": "El 0.5% de las ventas se concentran en estos horarios.",
+                        "accion": "Asegurar al menos 2 cajeros disponibles durante las horas pico."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "El 31.5% de las ventas están por debajo de la mitad del ticket",
+                        "evidencia": "Ticket promedio: ₡993. 6,967 transacciones fueron de menos de ₡497.",
+                        "accion": "Implementar 'combos de oportunidad' en caja."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "Patrón de compra: HUEVOS",
+                        "evidencia": "276 transacciones con HUEVOS en el mes (₡253,089).",
+                        "accion": "Crear 'isla de combinación' junto al HUEVOS."
+                    },
+                    {
+                        "prioridad": "Alta",
+                        "hallazgo": "Dependencia en productos estrella",
+                        "evidencia": "Solo 3 productos generan el 6.2% de tus ingresos totales.",
+                        "accion": "Establecer stock mínimo de seguridad de 15 días para estos 3 productos."
+                    }
+                ]
+            },
+            "Marzo": {
+                "resumen_general": {
+                    "venta_total": 41889276.55,
+                    "ticket_promedio": 2719.91,
+                    "iva_estimado": 4819120.31,
+                    "transacciones": 15401,
+                    "crecimiento_ticket_pct": 173.86,
+                    "margen_bruto_pct": 1.8,
+                    "utilidad_bruta_est": 754122.36
+                },
+                "autoconsumo": {
+                    "total_monto": 580034.86,
+                    "transacciones": 128,
+                    "descripcion": "Se detectaron 128 transacciones de autoconsumo sumando ₡580,034.86.",
+                    "plan_accion": "Auditar mensualmente los retiros de mercadería por parte de los socios."
+                },
+                "planes_accion": [
+                    {
+                        "prioridad": "Alta",
+                        "hallazgo": "Horas Pico: 12:08 y 20:15",
+                        "evidencia": "El 0.6% de las ventas se concentran en estos horarios.",
+                        "accion": "Asegurar al menos 2 cajeros disponibles durante las horas pico. Reponer productos de alta rotación."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "El 42.0% de las ventas están por debajo de la mitad del ticket",
+                        "evidencia": "Ticket promedio: ₡2,720. 6,473 transacciones fueron de menos de ₡1,360.",
+                        "accion": "Implementar 'combos de oportunidad' en caja."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "Patrón de compra: HUEVOS",
+                        "evidencia": "227 transacciones con HUEVOS en el mes (₡582,855).",
+                        "accion": "Crear 'isla de combinación' junto al HUEVOS."
+                    },
+                    {
+                        "prioridad": "Alta",
+                        "hallazgo": "Dependencia en productos estrella",
+                        "evidencia": "Solo 3 productos (AGUACATE HASS, QUESO TURRIALBA, TOMATE) generan el 8.4% de ingresos.",
+                        "accion": "Establecer stock mínimo de seguridad de 15 días para estos 3 productos."
+                    },
+                    {
+                        "prioridad": "Media",
+                        "hallazgo": "Ticket promedio creció +173.9% vs mes anterior",
+                        "evidencia": "Pasó de ₡993 a ₡2,720. Señal positiva de crecimiento.",
+                        "accion": "Capitalizar esta tendencia: introducir productos premium cerca de artículos de alta rotación."
+                    }
+                ]
             }
-        }
-
-        function cambiarMes() {
-            cargarHallazgos();
-        }
+        };
 
         function cargarHallazgos() {
             const mes = document.getElementById('mes-selector').value;
@@ -123,6 +243,19 @@
             }
 
             // --- RESUMEN EJECUTIVO ---
+            let alertaMargen = '';
+            if (rg.margen_bruto_pct < 5) {
+                alertaMargen = `<p style="margin: 8px 0 0 0; font-size: 1rem; color: #dc3545; background: #f8d7da; padding: 8px; border-radius: 4px;">
+                    <strong>⚠️ ALERTA CRÍTICA:</strong> Tu margen bruto es solo del ${rg.margen_bruto_pct}%.
+                    Esto significa que por cada ₡100 que vendes, te quedan solo ₡${rg.margen_bruto_pct} después de pagar todo.
+                    <strong>Necesitas reducir gastos o subir precios!</strong>
+                </p>`;
+            } else if (rg.margen_bruto_pct < 15) {
+                alertaMargen = `<p style="margin: 8px 0 0 0; font-size: 0.95rem; color: #856404; background: #fff3cd; padding: 8px; border-radius: 4px;">
+                    <strong>⚠️ Oportunidad:</strong> Tu margen bruto es del ${rg.margen_bruto_pct}%. En supermercados saludables debe ser >15%. Puedes mejorar revisando tus gastos.
+                </p>`;
+            }
+
             document.getElementById('resumen-ejecutivo').innerHTML = `
                 <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:1rem; margin-bottom:1rem;">
                     <div style="background:var(--bg-secondary); padding:12px; border-radius:8px;">
@@ -144,6 +277,7 @@
                     con un ticket promedio de <strong>${formatCurrency(rg.ticket_promedio)}</strong>.
                     La utilidad bruta estimada al ${rg.margen_bruto_pct}% es de <strong style="color:#FE9929;">${formatCurrency(rg.utilidad_bruta_est)}</strong>.
                 </p>
+                ${alertaMargen}
             `;
 
             // --- PLAN DE ACCIÓN CON EVIDENCIAS ---
@@ -157,7 +291,7 @@
                     'Baja':   { bg: '#f0fdf4', border: '#22c55e', badge: '#16a34a', text: '#14532d' },
                 };
                 let html = '<div style="display:grid; gap:1.25rem;">';
-                planes.forEach((plan, idx) => {
+                planes.forEach((plan) => {
                     const c = prioColors[plan.prioridad] || prioColors['Media'];
                     html += `
                         <div style="background:${c.bg}; border-left:4px solid ${c.border}; border-radius:8px; padding:1rem;">
@@ -200,20 +334,11 @@
             return Math.round(val).toLocaleString();
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-            document.getElementById('theme-icon').textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            document.getElementById('theme-text').textContent = document.body.classList.contains('dark-mode') ? 'Modo Claro' : 'Modo Oscuro';
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
-                document.getElementById('theme-icon').textContent = '☀️';
-                document.getElementById('theme-text').textContent = 'Modo Claro';
             }
-            init();
+            cargarHallazgos();
         });
     </script>
 
