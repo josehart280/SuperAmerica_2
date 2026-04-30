@@ -67,8 +67,8 @@
 
         async function loadData() {
             const [resTops, resMonthly] = await Promise.all([
-                fetch('./data/tops_productos.json').then(r => r.json()).catch(() => fetch('/api/tops_productos').then(r => r.json())),
-                fetch('./data/datos_mensuales.json').then(r => r.json()).catch(() => fetch('/api/datos_mensuales').then(r => r.json()))
+                fetch('./tops_productos.json').then(r => r.json()).catch(() => fetch('/api/tops_productos').then(r => r.json())),
+                fetch('./datos_mensuales.json').then(r => r.json()).catch(() => fetch('/api/datos_mensuales').then(r => r.json()))
             ]);
             topsData = resTops;
             monthlyData = resMonthly;

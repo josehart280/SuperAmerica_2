@@ -87,9 +87,9 @@
         async function loadData() {
             try {
                 // Intentar desde data/ primero, luego API (para desarrollo con server)
-                const semPromise = fetch('./data/datos_semanales.json').then(r => r.json()).catch(() => null);
-                const menPromise = fetch('./data/datos_mensuales.json').then(r => r.json()).catch(() => null);
-                const heatPromise = fetch('./data/heatmap_data.json').then(r => r.json()).catch(() => null);
+                const semPromise = fetch('./datos_semanales.json').then(r => r.json()).catch(() => null);
+                const menPromise = fetch('./datos_mensuales.json').then(r => r.json()).catch(() => null);
+                const heatPromise = fetch('./heatmap_data.json').then(r => r.json()).catch(() => null);
 
                 const [sem, men, heat] = await Promise.all([semPromise, menPromise, heatPromise]);
                 datosSemanales = sem;
