@@ -74,7 +74,7 @@
         async function init() {
             try {
                 // Intentar desde data/ primero (Vercel/static), luego API (server)
-                datosInsights = await fetch('../data/insights_results.json')
+                datosInsights = await fetch('./data/insights_results.json')
                     .then(r => r.json())
                     .catch(() => fetch('/api/insights_results').then(r => r.json()));
                 cargarHallazgos();
